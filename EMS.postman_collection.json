@@ -1,0 +1,313 @@
+{
+	"info": {
+		"_postman_id": "539e70f8-5439-4aa4-a01b-1ec5d5e9b1bd",
+		"name": "EMS",
+		"description": "Employee Management System",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "28771492"
+	},
+	"item": [
+		{
+			"name": "login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Token Authorization \", function () {   ",
+							"     pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Set Environment Variable with token\", function () {",
+							"    var jsonData = JSON.parse(responseBody);",
+							"",
+							"    pm.expect(jsonData.access).to.exist;",
+							"    pm.expect(jsonData.access).to.be.not.null;",
+							"    pm.collectionVariables.set(\"ACCESS_TOKEN\", jsonData.access);",
+							"",
+							"    pm.expect(jsonData.refresh).to.exist;",
+							"    pm.expect(jsonData.refresh).to.be.not.null;",
+							"    pm.collectionVariables.set(\"REFRESH_TOKEN\", jsonData.refresh);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\":\"employee3\",\n    \"password\":\"As@12345\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{base_url}}/api/token/"
+			},
+			"response": []
+		},
+		{
+			"name": "refresh_token",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"refresh\":\"{{REFRESH_TOKEN}}\"\n}"
+				},
+				"url": "{{base_url}}/api/token/refresh/"
+			},
+			"response": []
+		},
+		{
+			"name": "register",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"testuser\",\n    \"email\": \"test@example.com\",\n    \"password\": \"testpassword123\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{base_url}}/api/accounts/register/"
+			},
+			"response": []
+		},
+		{
+			"name": "List Employees",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": "{{ACCESS_TOKEN}}"
+					}
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"testuser\",\n    \"email\": \"test@example.com\",\n    \"password\": \"testpassword123\"\n}"
+				},
+				"url": "{{base_url}}/employee/api/employees/"
+			},
+			"response": []
+		},
+		{
+			"name": "Form Field",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": "{{ACCESS_TOKEN}}"
+					}
+				},
+				"method": "GET",
+				"header": [],
+				"url": "{{base_url}}/employee/api/fields/"
+			},
+			"response": []
+		},
+		{
+			"name": "Form Field Order Change",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": "{{ACCESS_TOKEN}}"
+					}
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"id\":2, \"field_order\":0}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{base_url}}/employee/api/fields/update_order/"
+			},
+			"response": []
+		},
+		{
+			"name": "Form Field Add",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": "{{ACCESS_TOKEN}}"
+					}
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"field_label\":\"Seat Number\", \n    \"field_type\":\"number\",\n    \"field_order\":5,\n    \"field_is_required\":true\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{base_url}}/employee/api/fields/add_field/"
+			},
+			"response": []
+		},
+		{
+			"name": "Create Employee",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": "{{ACCESS_TOKEN}}"
+					}
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"username\": \"sbda\",\n  \"first_name\": \"JohnOe\",\n  \"last_name\": \"Doe\",\n  \"password\": \"Str0ng@123\",\n  \"email\": \"hjasd@example.com\",\n  \"employee_id\":\"jkwe\",\n  \"Age\": 30,\n  \"Date of Birth\": \"1994-08-12\",\n  \"gender\": \"Male\"\n}"
+				},
+				"url": "{{base_url}}/employee/api/employees/"
+			},
+			"response": []
+		},
+		{
+			"name": "Updated Employee",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": "{{ACCESS_TOKEN}}"
+					}
+				},
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"employee_id\": \"EMP005\",\n  \"extra_data\": {\n    \"gender\": \"Female\",\n    \"joining_date\": \"2025-11-04\",\n    \"department\": \"HR\"\n  }\n}"
+				},
+				"url": "{{base_url}}/employee/api/employees/6/"
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Employee",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": "{{ACCESS_TOKEN}}"
+					}
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"username\": \"sbda\",\n  \"first_name\": \"JohnOe\",\n  \"last_name\": \"Doe\",\n  \"password\": \"Str0ng@123\",\n  \"email\": \"hjasd@example.com\",\n  \"employee_id\":\"jkwe\",\n  \"Age\": 30,\n  \"Date of Birth\": \"1994-08-12\",\n  \"gender\": \"Male\"\n}"
+				},
+				"url": "{{base_url}}/employee/api/employees/6"
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "",
+			"type": "default"
+		},
+		{
+			"key": "ACCESS_TOKEN",
+			"value": ""
+		},
+		{
+			"key": "REFRESH_TOKEN",
+			"value": ""
+		}
+	]
+}
