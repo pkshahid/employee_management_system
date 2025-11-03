@@ -19,7 +19,7 @@ Also we have used Bootstrap for styling templates.
 
 5. To run tests `docker exec -it app-container python manage.py test` .
    
-6. Run `docker compose down` in terminal to stop the API
+6. Run `docker compose down` in terminal to stop the app
 
 ------------------------------------------------------------
 # Note:
