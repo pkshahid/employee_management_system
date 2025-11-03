@@ -1,0 +1,51 @@
+networks:
+  my_network:
+
+services:
+
+  app:
+    container_name: app-container
+    restart: always
+    build:
+      context: ./ems
+    image: 'ems_app:latest'
+    env_file:
+      - ./ENV/.env
+    volumes:
+      - './ems:/app'
+      # - './db.sqlite3:/app/db.sqlite3'
+    command: 'python manage.py runserver 0:8000'
+    ports:
+      - '8000:8000'
+    networks:
+      - my_network
+
+  db:
+    container_name: postgres-container
+    env_file:
+      - ./services/.db_parameter
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    restart: always
+    image: postgres:14.1
+    volumes:
+      - ./services/postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./pgdata:/var/lib/postgresql/data
+    command:
+      postgres -c config_file=/etc/postgresql/postgresql.conf
+    networks:
+      - my_network
+
+  adminer:
+    image: adminer
+    container_name: adminer-container
+    command: php -S 0.0.0.0:8080 -t /var/www/html
+    ports:
+      - '8082:8080'
+    networks:
+      - my_network
+    depends_on:
+      - db

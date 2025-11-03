@@ -1,0 +1,47 @@
+{% extends "employee/base.html" %}
+{% block title %}Profile - Employee Management{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="card shadow-sm w-75 mx-auto">
+    <div class="card-header bg-white">
+      <h5 class="mb-0"><i class="fas fa-user-circle me-2"></i>My Profile</h5>
+    </div>
+    <div class="card-body">
+      <div class="row mb-3">
+        <div class="col-md-4 fw-semibold text-muted">Username:</div>
+        <div class="col-md-8">{{ request.user.username }}</div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-4 fw-semibold text-muted">Email:</div>
+        <div class="col-md-8">{{ request.user.email }}</div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-4 fw-semibold text-muted">Full Name:</div>
+        <div class="col-md-8">{{ request.user.get_full_name|default:"—" }}</div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-4 fw-semibold text-muted">Date Joined:</div>
+        <div class="col-md-8">{{ request.user.date_joined|date:"F j, Y, g:i a" }}</div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-4 fw-semibold text-muted">Last Login:</div>
+        <div class="col-md-8">{{ request.user.last_login|date:"F j, Y, g:i a" }}</div>
+      </div>
+    </div>
+
+    <div class="card-footer bg-light text-end">
+      <a href="{% url 'password_change' %}" class="btn btn-outline-primary btn-sm">
+        <i class="fas fa-key"></i> Change Password
+      </a>
+      <a href="{% url 'logout' %}" class="btn btn-outline-danger btn-sm">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

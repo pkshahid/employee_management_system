@@ -1,0 +1,106 @@
+{% extends 'employee/base.html' %}
+{% load static %}
+{% block title %}Employees Directory{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>Users Directory</h2>
+  <a class="btn btn-primary" href="{% url 'employee_create' %}">Add Employee</a>
+</div>
+
+{% comment %} Filter Section {% endcomment %}
+<form method="get" class="mb-3">
+  <div class="input-group">
+    {% for dyn in dynamic_fields %}
+      {% if dyn.field_type in 'select,radio' %}
+            <select name="{{dyn.field_label}}" class="form-control">
+              <option value="">-- Select --</option>
+              {% for opt in dyn.options %}
+              <option value="{{opt}}">{{opt}}</option>
+              {% endfor %}
+            </select>
+      {% else %}
+      <input type="{{dyn.field_type}}" name="{{dyn.field_label}}" class="form-control" placeholder="Search by {{dyn.field_label}}...">
+      {% endif %}
+    {% endfor %}
+    <button type="submit" class="btn btn-outline-secondary">Filter</button>
+    <button type="reset" class="btn btn-outline-danger" onclick="window.location.href=window.location.origin + window.location.pathname;">Reset</button>
+  </div>
+</form>
+{% comment %} Filter section ends {% endcomment %}
+
+{% if employees %}
+  <div class="row g-3">
+    {% for emp in employees %}
+    <div class="col-md-4 d-flex">
+      <div class="card flex-fill p-3">
+        <div class="d-flex flex-column justify-content-between h-100">
+          <div>
+            <h5>{{ emp.uid.first_name }} {{ emp.uid.last_name }}
+              <small class="text-muted">({{ emp.uid.username }})</small>
+            </h5>
+            <p class="mb-1"><strong>Email:</strong> {{ emp.uid.email }}</p>
+            <p class="mb-1"><strong>Emp ID:</strong> {{ emp.employee_id }}</p>
+            <p class="mb-1"><strong>Joined:</strong> {{ emp.created_on|date:'M d, Y' }}</p>
+            {% for k, v in emp.extra_data.items %}
+              <p class="mb-1">{{ k }}: {{ v }}</p>
+            {% endfor %}
+          </div>
+
+          <div class="text-end mt-3">
+            <a class="btn btn-sm btn-outline-primary me-2" href="{% url 'employee_edit' pk=emp.id %}">Edit</a>
+            <button class="btn btn-sm btn-outline-danger" data-id="{{ emp.id }}" onclick="deleteEmployee({{ emp.id }})">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+
+  {% comment %} Pagiation Section {% endcomment %}
+  <nav class="mt-4">
+    <ul class="pagination justify-content-center">
+      {% if page_obj.has_previous %}
+      <li class="page-item"><a class="page-link" href="?page=1{% if q %}&q={{ q }}{% endif %}">&laquo; First</a></li>
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}">Previous</a></li>
+      {% endif %}
+
+      {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+          <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+          <li class="page-item"><a class="page-link" href="?page={{ num }}{% if q %}&q={{ q }}{% endif %}">{{ num }}</a></li>
+        {% endif %}
+      {% endfor %}
+
+      {% if page_obj.has_next %}
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}">Next</a></li>
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if q %}&q={{ q }}{% endif %}">Last &raquo;</a></li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% comment %} Pagiation Section ends {% endcomment %}
+
+{% else %}
+  <p class="text-muted">No employees found.</p>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+
+  // Employee delete flow comes here
+  const list_url = "{% url 'employee_list' %}"
+  async function deleteEmployee(id){
+  if(!confirm('Delete this employee?')) return;
+  try{
+    const resp = await fetch(`${list_url}${id}/`, {
+      method: 'DELETE',
+      headers: {'X-CSRFToken': getCookie('csrftoken')}
+    });
+    if(resp.ok){ alert('Deleted'); window.location.reload(); }
+    else { alert('Delete failed'); }
+  }catch(e){ console.error(e); alert('Error'); }
+}
+</script>
+{% endblock %}

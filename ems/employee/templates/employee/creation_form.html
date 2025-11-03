@@ -1,0 +1,109 @@
+{% extends 'employee/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% load custom_filters %}
+
+{% block title %}{% if edit_employee %}Edit{% else %}Add{% endif %} Employee{% endblock %}
+
+{% block content %}
+<div class="card w-75 mx-auto mt-4">
+  <h5 class="card-header">{% if edit_employee %}Edit{% else %}Add New{% endif %} Employee</h5>
+  <div class="card-body">
+    <form id="id-employee-creation-form">
+      {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+      {% for field in form.visible_fields %}
+      <div class="form-group row mb-2">
+        <label class="col-sm-4 col-form-label">{{ field.label_tag }}</label>
+        <div class="col-sm-8">{% render_field field class='form-control' %}</div>
+      </div>
+      {% endfor %}
+
+      <hr/>
+      <h6>Additional Fields</h6>
+      {% for dyn_field in dynamic_fields %}
+      <div class="form-group row mb-2">
+        <label class="col-sm-4 col-form-label">{{ dyn_field.field_label }}{% if dyn_field.field_is_required %} *{% endif %}</label>
+        <div class="col-sm-8">
+          {% if dyn_field.field_type == 'select' %}
+            <select name="{{ dyn_field.field_label }}" class="form-control">
+              <option value="">-- Select --</option>
+              {% for opt in dyn_field.options %}
+              <option value="{{ opt }}" {% if edit_employee and edit_employee.extra_data|get_item:dyn_field.field_label == opt %}selected{% endif %}>{{ opt }}</option>
+              {% endfor %}
+            </select>
+          {% elif dyn_field.field_type == 'radio' %}
+            {% for opt in dyn_field.options %}
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="{{ dyn_field.field_label }}" id="{{ dyn_field.field_label }}_{{ forloop.counter }}" value="{{ opt }}" {% if edit_employee and edit_employee.extra_data|get_item:dyn_field.field_label == opt %}checked{% endif %}>
+                <label class="form-check-label" for="{{ dyn_field.field_label }}_{{ forloop.counter }}">{{ opt }}</label>
+              </div>
+            {% endfor %}
+          {% else %}
+            <input name="{{ dyn_field.field_label }}" type="{{ dyn_field.field_type }}" class="form-control" value="{% if edit_employee %}{{ edit_employee.extra_data|get_item:dyn_field.field_label }}{% endif %}" {% if dyn_field.field_is_required %}required{% endif %} />
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+
+      <div class="mt-3">
+        <button id="submit-form-btn" type="button" class="btn btn-primary">{% if edit_employee %}Update{% else %}Submit{% endif %}</button>
+        {% if edit_employee %}
+          <button id="delete-employee-btn" type="button" class="btn btn-danger">Delete</button>
+        {% endif %}
+        <button type="reset" id="clear-btn" class="btn btn-outline-secondary">Clear</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+
+  const employee_list_url = "{% url 'employee_list' %}";
+
+  document.addEventListener('DOMContentLoaded', ()=>{
+
+  // Send form data on submit button click
+  const form = document.getElementById('id-employee-creation-form');
+  document.getElementById('submit-form-btn').addEventListener('click', async ()=>{
+    const fd = new FormData(form);
+    try{
+      // Send ajax request
+      const resp = await fetch(window.location.href, {
+        method: 'POST',
+        headers: {'X-CSRFToken': getCookie('csrftoken')},
+        body: fd
+      });
+      const data = await resp.json();
+      if(resp.ok) { 
+        alert(data.message || 'Saved'); 
+        //Redirect
+        window.location.href = employee_list_url; 
+      }
+      else { 
+        alert(data.message || 'Error'); 
+        console.error(data); 
+      }
+    }catch(e){ 
+      console.error(e); 
+      alert('Save failed'); 
+    }
+  });
+
+
+  const delBtn = document.getElementById('delete-employee-btn');
+  if(delBtn){
+    delBtn.addEventListener('click', async ()=>{
+      if(!confirm('Delete this employee?')) return;
+      const url = employee_list_url;
+      try{
+        const resp = await fetch(url, { method: 'DELETE', headers: {'X-CSRFToken': getCookie('csrftoken')} });
+        if(resp.ok){ alert('Deleted'); window.location.href = employee_list_url; }
+        else { alert('Delete failed'); }
+      }catch(e){ console.error(e); alert('Delete error'); }
+    });
+  }
+});
+</script>
+{% endblock %}
